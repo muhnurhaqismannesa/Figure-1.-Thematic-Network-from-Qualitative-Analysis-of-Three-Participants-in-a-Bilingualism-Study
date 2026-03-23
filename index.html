@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Figure 1 — Thematic Network: Bilingualism Study</title>
+<meta name="description" content="Interactive Thematic Network from Qualitative Analysis of Three Participants in a Bilingualism Study">
+<meta property="og:title" content="Thematic Network — Bilingualism Study">
+<meta property="og:description" content="Interactive visualization of qualitative thematic analysis on cognitive fatigue among bilingual students.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #13132B;
+  --surface: rgba(22, 22, 52, 0.95);
+  --border: #3A3A6A;
+  --text: #E0E0F0;
+  --text-dim: #9090B0;
+  --global-fill: #6B4C8A;
+  --global-stroke: #B794D6;
+  --org-fill: #0D6B6B;
+  --org-stroke: #2DD4BF;
+  --basic-fill: #1E2952;
+  --basic-stroke: #5B6BA8;
+  --edge-green: #4ADE80;
+  --edge-red: #EF4444;
+  --edge-yellow: #F59E0B;
+  --edge-orange: #F97316;
+}
+
+body {
+  background: var(--bg);
+  font-family: 'IBM Plex Sans', 'Source Sans 3', sans-serif;
+  color: var(--text);
+  overflow: hidden;
+  width: 100vw;
+  height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Title Bar ── */
+#title-bar {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 100;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 20px;
+  max-width: 480px;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+}
+#title-bar h1 {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: -0.01em;
+}
+#title-bar p {
+  font-size: 11.5px;
+  color: var(--text-dim);
+  margin-top: 5px;
+}
+#title-bar .hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(255,255,255,0.06);
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 10.5px;
+  color: var(--text-dim);
+  margin-top: 8px;
+}
+
+/* ── Controls ── */
+#controls {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+#controls button {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  padding: 9px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 500;
+  transition: all 0.15s ease;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+#controls button:hover {
+  background: rgba(40,40,80,0.95);
+  border-color: #5A5A8A;
+  transform: translateY(-1px);
+}
+#controls button:active { transform: translateY(0); }
+
+/* ── Legend ── */
+#legend {
+  position: fixed;
+  bottom: 16px;
+  left: 16px;
+  z-index: 100;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px 20px;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+  max-width: 300px;
+  transition: transform 0.25s ease;
+}
+#legend.collapsed { transform: translateY(calc(100% - 40px)); }
+#legend h3 {
+  font-size: 12.5px;
+  font-weight: 700;
+  margin-bottom: 10px;
+  color: #fff;
+  cursor: pointer;
+  user-select: none;
+}
+#legend h3::after {
+  content: ' ▾';
+  font-size: 10px;
+  color: var(--text-dim);
+}
+.legend-section { margin-bottom: 12px; }
+.legend-section:last-child { margin-bottom: 0; }
+.legend-label { font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; font-weight: 600; }
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 5px;
+  font-size: 11.5px;
+}
+.legend-box {
+  width: 20px;
+  height: 14px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+.legend-line {
+  width: 26px;
+  height: 3px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+/* ── Tooltip ── */
+#tooltip {
+  position: fixed;
+  z-index: 200;
+  background: rgba(16,16,40,0.96);
+  border: 1px solid #5A5A9A;
+  border-radius: 8px;
+  padding: 10px 14px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  font-size: 12px;
+  max-width: 260px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+}
+#tooltip.visible { opacity: 1; }
+#tooltip .tt-type {
+  font-size: 9.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+#tooltip .tt-label { font-weight: 600; line-height: 1.35; }
+#tooltip .tt-connections { font-size: 10.5px; color: var(--text-dim); margin-top: 5px; }
+
+/* ── SVG ── */
+svg {
+  width: 100vw;
+  height: 100vh;
+  cursor: grab;
+  display: block;
+}
+svg:active { cursor: grabbing; }
+svg text { font-family: 'IBM Plex Sans', 'Source Sans 3', sans-serif; }
+
+/* ── Mobile ── */
+@media (max-width: 768px) {
+  #title-bar { max-width: calc(100vw - 100px); padding: 10px 14px; }
+  #title-bar h1 { font-size: 12px; }
+  #legend { max-width: 240px; padding: 12px 14px; }
+  #controls button { padding: 7px 12px; font-size: 11px; }
+}
+</style>
+</head>
+<body>
+
+<div id="title-bar">
+  <h1>Figure 1: Thematic Network from Qualitative Analysis of Three Participants in a Bilingualism Study</h1>
+  <p>Perceptions and Experiences of Cognitive Fatigue Among Bilingual Students in International Undergraduate Programs</p>
+  <div class="hint">🖱 Scroll to zoom · Drag to pan · Hover nodes for details</div>
+</div>
+
+<div id="controls">
+  <button onclick="zoomIn()">＋ Zoom In</button>
+  <button onclick="zoomOut()">− Zoom Out</button>
+  <button onclick="fitAll()">⊞ Fit All</button>
+  <button onclick="resetView()">↺ Reset</button>
+</div>
+
+<div id="legend">
+  <h3 onclick="this.parentElement.classList.toggle('collapsed')">Legend</h3>
+  <div class="legend-section">
+    <div class="legend-label">Node Types</div>
+    <div class="legend-item"><div class="legend-box" style="background:var(--global-fill);border:2px solid var(--global-stroke);"></div><span>Global Theme</span></div>
+    <div class="legend-item"><div class="legend-box" style="background:var(--org-fill);border:2px solid var(--org-stroke);"></div><span>Organizing Theme</span></div>
+    <div class="legend-item"><div class="legend-box" style="background:var(--basic-fill);border:2px solid var(--basic-stroke);"></div><span>Basic Theme</span></div>
+  </div>
+  <div class="legend-section">
+    <div class="legend-label">Edge Types</div>
+    <div class="legend-item"><div class="legend-line" style="background:var(--edge-green);"></div><span>IS PART OF</span></div>
+    <div class="legend-item"><div class="legend-line" style="background:var(--edge-red);"></div><span>LEADS TO</span></div>
+    <div class="legend-item"><div class="legend-line" style="background:var(--edge-yellow);"></div><span>INFLUENCES</span></div>
+    <div class="legend-item"><div class="legend-line" style="background:var(--edge-orange);"></div><span>IS ASSOCIATED WITH</span></div>
+  </div>
+</div>
+
+<div id="tooltip">
+  <div class="tt-type" id="tt-type"></div>
+  <div class="tt-label" id="tt-label"></div>
+  <div class="tt-connections" id="tt-conn"></div>
+</div>
+
+<svg id="canvas" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arr-g" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><path d="M0,0 L10,3.5 L0,7 Z" fill="var(--edge-green)" opacity="0.85"/></marker>
+    <marker id="arr-r" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><path d="M0,0 L10,3.5 L0,7 Z" fill="var(--edge-red)" opacity="0.85"/></marker>
+    <marker id="arr-y" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><path d="M0,0 L10,3.5 L0,7 Z" fill="var(--edge-yellow)" opacity="0.85"/></marker>
+    <marker id="arr-o" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><path d="M0,0 L10,3.5 L0,7 Z" fill="var(--edge-orange)" opacity="0.85"/></marker>
+    <filter id="glow"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <filter id="shadow"><feDropShadow dx="1" dy="2" stdDeviation="4" flood-color="#000" flood-opacity="0.5"/></filter>
+  </defs>
+  <g id="main-group"></g>
+</svg>
+
+<script>
+// ============================================================
+// DATA — All nodes and edges from the original thematic network
+// ============================================================
+
+const N = {
+  GT: { t:"global", l:"Perceptions and Experiences of\nCognitive Fatigue Among Bilingual\nStudents in International\nUndergraduate Programs", x:2400, y:1500 },
+
+  OT1:  { t:"org", l:"Multilingual\nDevelopment\nand Background", x:1100, y:700 },
+  OT2:  { t:"org", l:"Cognitive Load\nand Fatigue Due\nto Language\nSwitching", x:1700, y:800 },
+  OT3:  { t:"org", l:"Coping and\nAdaptive Strategies\nin Bilingualism", x:2700, y:700 },
+  OT4:  { t:"org", l:"Self-Perception\nand Language\nProficiency", x:1200, y:1200 },
+  OT5:  { t:"org", l:"Bilingual Experience\nand Linguistic\nBackground", x:1700, y:1200 },
+  OT6:  { t:"org", l:"Language Use\nAcross Contexts", x:2200, y:1200 },
+  OT7:  { t:"org", l:"Bilingual Academic\nMotivation and\nAspirations", x:1500, y:1900 },
+  OT8:  { t:"org", l:"Identity and\nMotivation\nin a Bilingual", x:2200, y:1700 },
+  OT9:  { t:"org", l:"Environmental\nImpact and\nSelf-Reflection", x:2800, y:1400 },
+  OT10: { t:"org", l:"Metacognition\nand Self-Reflection\nin Bilingualism", x:3200, y:1600 },
+  OT11: { t:"org", l:"Bilingual Identity\nNegotiation and\nFormation", x:2700, y:2200 },
+  OT12: { t:"org", l:"Role of Academic\nand Institutional\nEnvironment", x:3400, y:1000 },
+  OT13: { t:"org", l:"Social Consequences\nand Interpersonal\nDynamics in Bilingual\nSettings", x:2700, y:1050 },
+  OT14: { t:"org", l:"Cognitive Challenges\nand Adaptive\nStrategies", x:2300, y:850 },
+
+  BT1:  { t:"basic", l:"Bilingual and\nNational Household", x:700, y:300 },
+  BT2:  { t:"basic", l:"Early Exposure to\nForeign Languages", x:1000, y:280 },
+  BT3:  { t:"basic", l:"Linguistic Heritage\nfrom Family", x:700, y:520 },
+  BT4:  { t:"basic", l:"Multilingual Family\nEnvironment", x:500, y:700 },
+  BT5:  { t:"basic", l:"Exposure to English\nthrough Media", x:450, y:920 },
+  BT6:  { t:"basic", l:"Confidence Despite\nImperfect Grammar", x:650, y:1040 },
+  BT7:  { t:"basic", l:"Frustration Due to\nCross-Linguistic\nExpression Barriers", x:1550, y:450 },
+  BT8:  { t:"basic", l:"Difficulty in\nSpontaneous Expression\n(English to Indonesian)", x:1300, y:600 },
+  BT9:  { t:"basic", l:"Cognitive Fatigue\nfrom Non-Verbal", x:2050, y:380 },
+  BT10: { t:"basic", l:"Cognitive Load in\nOral Conversation", x:1900, y:530 },
+  BT11: { t:"basic", l:"Exhaustion Due to\nHigh Frequency\nof Switching", x:2350, y:480 },
+  BT12: { t:"basic", l:"Withdrawal Strategies\nDue to Fatigue", x:2600, y:420 },
+  BT13: { t:"basic", l:"Normalization of\nLinguistic Difficulties", x:2850, y:340 },
+  BT14: { t:"basic", l:"Tolerance for\nLanguage Switching", x:3200, y:380 },
+  BT15: { t:"basic", l:"Desensitization Toward\nthe Cognitive Load\nof Learning", x:3400, y:580 },
+  BT16: { t:"basic", l:"Selective Engagement\nin Single Language\nInteraction", x:3600, y:760 },
+  BT17: { t:"basic", l:"Self-Assessment of\nBasic Language Skills", x:800, y:1200 },
+  BT18: { t:"basic", l:"Advanced Language\nCompetence", x:800, y:1400 },
+  BT19: { t:"basic", l:"Code-Mixing as a\nForm of Adaptation", x:1350, y:1000 },
+  BT20: { t:"basic", l:"Self-Evaluation of\nHighest English\nProficiency", x:700, y:1600 },
+  BT21: { t:"basic", l:"Language Adaptation\nBased on Social\nEnvironment", x:1900, y:1400 },
+  BT22: { t:"basic", l:"Communication\nAdjustment Based\non Interlocutor", x:1700, y:1550 },
+  BT23: { t:"basic", l:"Context-Dependent\nLanguage Usage", x:2100, y:1500 },
+  BT24: { t:"basic", l:"Code-Switching in\nAcademic and\nSocial Settings", x:2000, y:1100 },
+  BT25: { t:"basic", l:"Language Switching\nas a Learning\nStrategy", x:1200, y:1850 },
+  BT26: { t:"basic", l:"Interest in Psychology\nas a Chosen Field", x:1350, y:2050 },
+  BT27: { t:"basic", l:"Intrinsic Motivation\nfor Language\nLearning", x:1100, y:2250 },
+  BT28: { t:"basic", l:"Aspiration to Become\nan Educational\nPsychologist", x:1500, y:2250 },
+  BT29: { t:"basic", l:"Pragmatic Motivation\nfor Entering in\nInternational Program", x:1800, y:2150 },
+  BT30: { t:"basic", l:"Social Implications\nof Bilingualism", x:2500, y:920 },
+  BT31: { t:"basic", l:"Feelings of\nMarginalization Due to\nLanguage Preference", x:2850, y:880 },
+  BT32: { t:"basic", l:"Social Distance\nCaused by\nSpontaneous Switching", x:3050, y:860 },
+  BT33: { t:"basic", l:"Pressure to Use English\nand Social Interaction\nin Bilingual Contexts", x:3200, y:1200 },
+  BT34: { t:"basic", l:"Linguistic Support\nin Peer Learning", x:3600, y:900 },
+  BT35: { t:"basic", l:"Academic Setting as\na Facilitator for\nLanguage Switching", x:3700, y:1100 },
+  BT36: { t:"basic", l:"Expectation of English\nUse in Academic\nInteractions", x:3500, y:1350 },
+  BT37: { t:"basic", l:"Translanguaging as a\nTool for Personal\nUnderstanding", x:3100, y:1380 },
+  BT38: { t:"basic", l:"Reflective Consciousness\nRegarding the Role\nof Language", x:3600, y:1580 },
+  BT39: { t:"basic", l:"Academic\nMetacognition", x:3400, y:1800 },
+  BT40: { t:"basic", l:"Awareness of Content\nLimitations Triggered\nby Language", x:3200, y:2000 },
+  BT41: { t:"basic", l:"Dominance of Inner\nThought in English", x:3500, y:2050 },
+  BT42: { t:"basic", l:"Language as a\nMedium of\nSocial Identity", x:2400, y:2450 },
+  BT43: { t:"basic", l:"Feelings of Insecurity\nDue to Being Perceived\nas Different", x:2600, y:2550 },
+  BT44: { t:"basic", l:"Shifts in Self-Perception\nDuring Language\nSwitching", x:2950, y:2400 },
+  BT45: { t:"basic", l:"Tensions Between\nLanguage and Identity", x:2850, y:2600 },
+  BT46: { t:"basic", l:"Notion of Cultural\nDislocation", x:3200, y:2350 },
+};
+
+const E = [
+  ["OT14","GT","IS PART OF","g"], ["OT13","GT","IS PART OF","g"], ["OT9","GT","IS PART OF","g"],
+  ["OT8","GT","IS PART OF","g"], ["OT6","GT","IS PART OF","g"],
+
+  ["BT1","OT1","IS PART OF","g"], ["BT2","OT1","IS PART OF","g"], ["BT3","OT1","IS PART OF","g"],
+  ["BT4","OT1","IS PART OF","g"], ["BT5","OT1","IS PART OF","g"], ["BT6","OT1","IS PART OF","g"],
+  ["BT7","OT1","IS PART OF","g"], ["BT8","OT1","IS PART OF","g"],
+
+  ["BT7","OT2","IS PART OF","g"], ["BT8","OT2","IS PART OF","g"], ["BT9","OT2","IS PART OF","g"],
+  ["BT10","OT2","IS PART OF","g"], ["BT11","OT2","IS PART OF","g"],
+  ["OT2","OT5","IS PART OF","g"], ["OT2","BT24","LEADS TO","r"],
+
+  ["BT12","OT3","IS PART OF","g"], ["BT13","OT3","IS PART OF","g"], ["BT14","OT3","IS PART OF","g"],
+  ["BT15","OT3","IS PART OF","g"], ["BT16","OT3","IS PART OF","g"],
+  ["BT11","OT3","LEADS TO","r"], ["OT3","OT14","IS PART OF","g"],
+
+  ["BT17","OT4","IS PART OF","g"], ["BT18","OT4","IS PART OF","g"], ["BT19","OT4","IS PART OF","g"],
+  ["BT6","OT4","IS PART OF","g"], ["BT20","OT4","IS PART OF","g"], ["OT4","OT5","IS PART OF","g"],
+
+  ["OT5","OT6","IS PART OF","g"], ["BT24","OT5","IS PART OF","g"],
+
+  ["BT21","OT6","IS PART OF","g"], ["BT22","OT6","IS PART OF","g"], ["BT23","OT6","IS PART OF","g"],
+  ["BT19","OT6","IS PART OF","g"], ["BT24","OT6","IS PART OF","g"],
+  ["OT6","OT7","INFLUENCES","y"],
+
+  ["BT25","OT7","IS PART OF","g"], ["BT26","OT7","IS PART OF","g"], ["BT27","OT7","IS PART OF","g"],
+  ["BT28","OT7","IS PART OF","g"], ["BT29","OT7","IS PART OF","g"],
+  ["OT7","OT8","IS PART OF","g"],
+
+  ["OT8","OT11","IS PART OF","g"],
+
+  ["OT13","OT9","IS PART OF","g"], ["OT12","OT9","IS PART OF","g"], ["OT10","OT9","IS PART OF","g"],
+
+  ["BT37","OT10","IS PART OF","g"], ["BT38","OT10","IS PART OF","g"], ["BT39","OT10","IS PART OF","g"],
+  ["BT40","OT10","IS PART OF","g"], ["BT41","OT10","IS PART OF","g"],
+  ["OT10","OT11","IS ASSOCIATED WITH","o"],
+
+  ["BT42","OT11","IS PART OF","g"], ["BT43","OT11","IS PART OF","g"], ["BT44","OT11","IS PART OF","g"],
+  ["BT45","OT11","IS PART OF","g"], ["BT46","OT11","IS PART OF","g"],
+
+  ["BT34","OT12","IS PART OF","g"], ["BT35","OT12","IS PART OF","g"],
+  ["BT36","OT12","IS PART OF","g"], ["BT16","OT12","IS PART OF","g"],
+
+  ["BT30","OT13","IS PART OF","g"], ["BT31","OT13","IS PART OF","g"],
+  ["BT32","OT13","IS PART OF","g"], ["BT33","OT13","IS PART OF","g"],
+  ["OT13","OT12","INFLUENCES","y"],
+
+  ["OT14","OT13","IS ASSOCIATED WITH","o"], ["OT14","OT3","IS PART OF","g"],
+
+  ["OT1","OT5","IS PART OF","g"], ["OT1","OT2","IS PART OF","g"],
+  ["BT33","OT9","IS PART OF","g"],
+];
+
+// ============================================================
+// RENDER ENGINE
+// ============================================================
+
+const svg = document.getElementById("canvas");
+const mg = document.getElementById("main-group");
+const tooltip = document.getElementById("tooltip");
+
+const CLR = { g:"var(--edge-green)", r:"var(--edge-red)", y:"var(--edge-yellow)", o:"var(--edge-orange)" };
+const MRK = { g:"arr-g", r:"arr-r", y:"arr-y", o:"arr-o" };
+
+let vb = { x:0, y:0, w:4200, h:3000 };
+let pan = false, sp = {x:0,y:0}, svb = {};
+
+function updVB() { svg.setAttribute("viewBox", `${vb.x} ${vb.y} ${vb.w} ${vb.h}`); }
+
+function dims(t) {
+  if (t==="global") return {w:310,h:140};
+  if (t==="org") return {w:200,h:105};
+  return {w:185,h:88};
+}
+
+function center(n) { const d=dims(n.t); return {x:n.x+d.w/2, y:n.y+d.h/2}; }
+
+function edgePts(a, b) {
+  const ca=center(a), cb=center(b), da=dims(a.t), db=dims(b.t);
+  const dx=cb.x-ca.x, dy=cb.y-ca.y, ang=Math.atan2(dy,dx);
+  function border(c,d,angle) {
+    const hw=d.w/2, hh=d.h/2, s=hh/hw;
+    if (Math.abs(Math.tan(angle))<s) {
+      const sx=Math.cos(angle)>0?hw:-hw;
+      return {x:c.x+sx, y:c.y+sx*Math.tan(angle)};
+    }
+    const sy=Math.sin(angle)>0?hh:-hh;
+    return {x:c.x+sy/Math.tan(angle), y:c.y+sy};
+  }
+  const p1=border(ca,da,ang), p2=border(cb,db,ang+Math.PI);
+  return {x1:p1.x, y1:p1.y, x2:p2.x, y2:p2.y};
+}
+
+// Connection count per node
+const connCount = {};
+E.forEach(([f,t])=>{
+  connCount[f] = (connCount[f]||0)+1;
+  connCount[t] = (connCount[t]||0)+1;
+});
+
+function drawEdge([from,to,label,color]) {
+  const a=N[from], b=N[to];
+  if(!a||!b) return;
+  const p=edgePts(a,b);
+  const c=CLR[color], m=MRK[color];
+
+  const ln = document.createElementNS("http://www.w3.org/2000/svg","line");
+  ln.setAttribute("x1",p.x1); ln.setAttribute("y1",p.y1);
+  ln.setAttribute("x2",p.x2); ln.setAttribute("y2",p.y2);
+  ln.setAttribute("stroke",c);
+  ln.setAttribute("stroke-width", color==="g"?"1.8":"2.4");
+  ln.setAttribute("stroke-opacity","0.6");
+  ln.setAttribute("marker-end",`url(#${m})`);
+  mg.appendChild(ln);
+
+  // Label
+  const mx=(p.x1+p.x2)/2, my=(p.y1+p.y2)/2;
+  const bg=document.createElementNS("http://www.w3.org/2000/svg","rect");
+  const tw=label.length*6+10;
+  bg.setAttribute("x",mx-tw/2); bg.setAttribute("y",my-9);
+  bg.setAttribute("width",tw); bg.setAttribute("height",18);
+  bg.setAttribute("fill","#13132B"); bg.setAttribute("fill-opacity","0.88");
+  bg.setAttribute("rx","4");
+  mg.appendChild(bg);
+
+  const tx=document.createElementNS("http://www.w3.org/2000/svg","text");
+  tx.setAttribute("x",mx); tx.setAttribute("y",my+4);
+  tx.setAttribute("text-anchor","middle");
+  tx.setAttribute("fill",c); tx.setAttribute("font-size","9.5");
+  tx.setAttribute("font-weight","600");
+  tx.textContent=label;
+  mg.appendChild(tx);
+}
+
+function drawNode(id) {
+  const n=N[id], d=dims(n.t);
+  const g=document.createElementNS("http://www.w3.org/2000/svg","g");
+  g.style.cursor="pointer";
+
+  const r=document.createElementNS("http://www.w3.org/2000/svg","rect");
+  r.setAttribute("x",n.x); r.setAttribute("y",n.y);
+  r.setAttribute("width",d.w); r.setAttribute("height",d.h);
+  r.setAttribute("rx","10");
+
+  const styles = {
+    global: {fill:"var(--global-fill)",stroke:"var(--global-stroke)",sw:"3"},
+    org:    {fill:"var(--org-fill)",stroke:"var(--org-stroke)",sw:"2.5"},
+    basic:  {fill:"var(--basic-fill)",stroke:"var(--basic-stroke)",sw:"1.5"},
+  };
+  const s=styles[n.t];
+  r.setAttribute("fill",s.fill); r.setAttribute("stroke",s.stroke);
+  r.setAttribute("stroke-width",s.sw);
+  if(n.t!=="basic") r.setAttribute("filter","url(#shadow)");
+  g.appendChild(r);
+
+  // Indicator dot
+  const dot=document.createElementNS("http://www.w3.org/2000/svg","circle");
+  dot.setAttribute("cx",n.x+13); dot.setAttribute("cy",n.y+13); dot.setAttribute("r","4.5");
+  dot.setAttribute("fill", n.t==="global"?"#D8B4FE":n.t==="org"?"#5EEAD4":"#93C5FD");
+  g.appendChild(dot);
+
+  // Text
+  const lines=n.l.split('\n');
+  const fs=n.t==="global"?14.5:n.t==="org"?12.5:11;
+  const lh=fs+3.5;
+  const sy=n.y+(d.h-lines.length*lh)/2+fs;
+  lines.forEach((line,i) => {
+    const t=document.createElementNS("http://www.w3.org/2000/svg","text");
+    t.setAttribute("x",n.x+d.w/2); t.setAttribute("y",sy+i*lh);
+    t.setAttribute("text-anchor","middle");
+    t.setAttribute("fill","#E8E8F4");
+    t.setAttribute("font-size",fs);
+    t.setAttribute("font-weight",n.t==="basic"?"400":"600");
+    t.textContent=line;
+    g.appendChild(t);
+  });
+
+  // Hover
+  g.addEventListener("mouseenter",(e) => {
+    r.setAttribute("stroke-width", n.t==="global"?"4.5":"4");
+    r.setAttribute("filter","url(#glow)");
+    const typeLabels={global:"Global Theme",org:"Organizing Theme",basic:"Basic Theme"};
+    const typeColors={global:"var(--global-stroke)",org:"var(--org-stroke)",basic:"var(--basic-stroke)"};
+    document.getElementById("tt-type").textContent=typeLabels[n.t];
+    document.getElementById("tt-type").style.color=typeColors[n.t];
+    document.getElementById("tt-label").textContent=n.l.replace(/\n/g,' ');
+    document.getElementById("tt-conn").textContent=`${connCount[id]||0} connections`;
+    tooltip.classList.add("visible");
+    tooltip.style.left=(e.clientX+16)+"px";
+    tooltip.style.top=(e.clientY-10)+"px";
+  });
+  g.addEventListener("mousemove",(e)=>{
+    tooltip.style.left=(e.clientX+16)+"px";
+    tooltip.style.top=(e.clientY-10)+"px";
+  });
+  g.addEventListener("mouseleave",()=>{
+    r.setAttribute("stroke-width",s.sw);
+    r.setAttribute("filter",n.t==="basic"?"":"url(#shadow)");
+    tooltip.classList.remove("visible");
+  });
+
+  mg.appendChild(g);
+}
+
+function render() {
+  mg.innerHTML='';
+  E.forEach(drawEdge);
+  const order=["basic","org","global"];
+  order.forEach(type => {
+    Object.keys(N).forEach(id => { if(N[id].t===type) drawNode(id); });
+  });
+}
+
+// ── Pan & Zoom ──
+svg.addEventListener("mousedown",e=>{ pan=true; sp={x:e.clientX,y:e.clientY}; svb={...vb}; });
+svg.addEventListener("mousemove",e=>{
+  if(!pan)return;
+  const sc=vb.w/svg.clientWidth;
+  vb.x=svb.x-(e.clientX-sp.x)*sc;
+  vb.y=svb.y-(e.clientY-sp.y)*sc;
+  updVB();
+});
+svg.addEventListener("mouseup",()=>pan=false);
+svg.addEventListener("mouseleave",()=>pan=false);
+svg.addEventListener("wheel",e=>{
+  e.preventDefault();
+  const z=e.deltaY>0?1.08:0.92;
+  const rc=svg.getBoundingClientRect();
+  const mx=(e.clientX-rc.left)/rc.width, my=(e.clientY-rc.top)/rc.height;
+  const nw=vb.w*z, nh=vb.h*z;
+  vb.x+=(vb.w-nw)*mx; vb.y+=(vb.h-nh)*my;
+  vb.w=nw; vb.h=nh;
+  updVB();
+},{passive:false});
+
+// Touch
+let ltd=0;
+svg.addEventListener("touchstart",e=>{
+  if(e.touches.length===1){pan=true;sp={x:e.touches[0].clientX,y:e.touches[0].clientY};svb={...vb};}
+  if(e.touches.length===2){ltd=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);}
+});
+svg.addEventListener("touchmove",e=>{
+  e.preventDefault();
+  if(e.touches.length===1&&pan){const sc=vb.w/svg.clientWidth;vb.x=svb.x-(e.touches[0].clientX-sp.x)*sc;vb.y=svb.y-(e.touches[0].clientY-sp.y)*sc;updVB();}
+  if(e.touches.length===2){const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);const z=ltd/d;const cx=vb.x+vb.w/2,cy=vb.y+vb.h/2;vb.w*=z;vb.h*=z;vb.x=cx-vb.w/2;vb.y=cy-vb.h/2;ltd=d;updVB();}
+},{passive:false});
+svg.addEventListener("touchend",()=>pan=false);
+
+function zoomIn(){const cx=vb.x+vb.w/2,cy=vb.y+vb.h/2;vb.w*=0.78;vb.h*=0.78;vb.x=cx-vb.w/2;vb.y=cy-vb.h/2;updVB();}
+function zoomOut(){const cx=vb.x+vb.w/2,cy=vb.y+vb.h/2;vb.w*=1.28;vb.h*=1.28;vb.x=cx-vb.w/2;vb.y=cy-vb.h/2;updVB();}
+function resetView(){vb={x:0,y:0,w:4200,h:3000};updVB();}
+function fitAll(){
+  let x1=Infinity,y1=Infinity,x2=-Infinity,y2=-Infinity;
+  Object.values(N).forEach(n=>{const d=dims(n.t);x1=Math.min(x1,n.x);y1=Math.min(y1,n.y);x2=Math.max(x2,n.x+d.w);y2=Math.max(y2,n.y+d.h);});
+  const p=120;vb={x:x1-p,y:y1-p,w:x2-x1+2*p,h:y2-y1+2*p};updVB();
+}
+
+render(); fitAll();
+</script>
+</body>
+</html>
